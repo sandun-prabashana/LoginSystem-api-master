@@ -23,16 +23,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean addUser(UserDTO user) {
-        if (userRepo.existsById(user.getId())){
-            throw new ValidateException("User Already Exist");
-        }
+
+
         User map = mapper.map(user, User.class);
         userRepo.save(map);
         return true;
     }
 
     @Override
-    public UserDTO validateUser(String email, String password) {
+    public UserDTO validateUser(String email) {
         Optional<User> optionalUser = userRepo.findByEmail(email);
         System.out.println(optionalUser + " find method");
         if (optionalUser.isPresent()) {
@@ -40,6 +39,21 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new ValidateException("There is no optionalUser for this email");
         }
+    }
+
+    @Override
+    public String getUid() {
+        return userRepo.gerLastUid();
+    }
+
+    @Override
+    public String getUserName(String username) {
+        return userRepo.username(username);
+    }
+
+    @Override
+    public String getEmail(String email) {
+        return userRepo.emailAddress(email);
     }
 
 

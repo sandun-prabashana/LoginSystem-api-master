@@ -4,9 +4,14 @@ package com.epic.demo.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.NotBlank;
+
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
 
 @Entity
 @NoArgsConstructor
@@ -15,7 +20,9 @@ import javax.persistence.Id;
 public class User {
 
     @Id
-    public String id;
+//    @GeneratedValue(strategy = GenerationType.AUTO)
+    public String  id;
+
     public String username;
     public String email;
     public String password;
