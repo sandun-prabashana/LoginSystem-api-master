@@ -31,13 +31,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO validateUser(String email) {
-        Optional<User> optionalUser = userRepo.findByEmail(email);
+    public UserDTO validateUser(String username) {
+        Optional<User> optionalUser = userRepo.findByUsername(username);
         System.out.println(optionalUser + " find method");
         if (optionalUser.isPresent()) {
             return mapper.map(optionalUser.get(), UserDTO.class);
         } else {
-            throw new ValidateException("There is no optionalUser for this email");
+            throw new ValidateException("There is no optionalUser for this UserName");
         }
     }
 

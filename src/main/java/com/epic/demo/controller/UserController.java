@@ -1,5 +1,9 @@
 package com.epic.demo.controller;
 
+/**
+ * @author Sandun Prabashana <sandunprabashana@gmail.com> (prabashana.tk/)
+ * @since 10/4/2021
+ */
 
 import com.epic.demo.dto.UserDTO;
 import com.epic.demo.exception.NotfoundException;
@@ -29,61 +33,89 @@ public class UserController {
 
     private PasswordConveter conveter = new PasswordConveter();
 
+
+    private String validateData(UserDTO dto) {
+        if (dto.getUsername().trim().length() <= 0) {
+            return "User User_Name is missing";
+        } else if (dto.getEmail().trim().length() <= 0) {
+            return "User Email is missing";
+        } else if (dto.getPassword().trim().length() <= 0) {
+            return "User Password is missing";
+        } else {
+            return "true";
+        }
+    }
+
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getDetails( @RequestBody UserDTO dto) throws Exception {
 
-        String encdata = conveter.convertPassword(dto.password);
-        dto.setPassword(encdata);
+        String validate = validateData(dto);
+        if (validate.equals("true")) {
 
-        String id=service.getUid();
-        String request_id = "U001";
-        try {
+//            Password encrypt
+            String encdata = conveter.convertPassword(dto.password);
+            dto.setPassword(encdata);
 
-            String last_uid = id;
-            int newId = parseInt(last_uid.substring(1, 4)) + 1;
-            if (newId < 10) {
-                request_id = "U00" + newId;
-                dto.setId(request_id);
-            } else if (newId < 100) {
-                request_id = "U0" + newId;
-                dto.setId(request_id);
-            } else {
-                request_id = "U" + newId;
+//            Create User ID
+            String id=service.getUid();
+            String request_id = "U001";
+            try {
+
+                String last_uid = id;
+                int newId = parseInt(last_uid.substring(1, 4)) + 1;
+                if (newId < 10) {
+                    request_id = "U00" + newId;
+                    dto.setId(request_id);
+                } else if (newId < 100) {
+                    request_id = "U0" + newId;
+                    dto.setId(request_id);
+                } else {
+                    request_id = "U" + newId;
+                    dto.setId(request_id);
+                }
+
+            } catch (Exception e) {
+                request_id = "U001";
                 dto.setId(request_id);
             }
 
-        } catch (Exception e) {
-            request_id = "U001";
-            dto.setId(request_id);
-        }
+            String username = service.getUserName(dto.username);
+            String emailAddress = service.getEmail(dto.email);
 
-        String username = service.getUserName(dto.username);
-        String emailAddress = service.getEmail(dto.email);
+//            Check UserName
+            if (username==null){
 
-        if (username==null){
-            if (emailAddress==null){
-                service.addUser(dto);
+//                Check EmailAddress
+                if (emailAddress==null){
+
+//                    Save User
+                    service.addUser(dto);
+                }else {
+                    throw new NotFoundException("This Email Already Take");
+                }
             }else {
-                throw new NotFoundException("This Email Already Take");
+                throw new NotFoundException("User Name Already Taken");
             }
-        }else {
-            throw new NotFoundException("User Name Already Taken");
+
+            return new ResponseEntity(new StandradResponse("201","Success",dto), HttpStatus.CREATED);
+
+        } else {
+            throw new NotFoundException(validate);
         }
 
 
 
-
-        return new ResponseEntity(new StandradResponse("201","Done",dto), HttpStatus.CREATED);
 
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StandradResponse> SearchUser(@RequestHeader("email") String email) throws Exception {
-        System.out.println(email + " username login ");
-        if (email.trim().length() <= 0) {
-            throw new NotFoundException("email cannot be empty");
+    public ResponseEntity<StandradResponse> SearchUser(@RequestHeader("username") String username) throws Exception {
+        System.out.println(username + " username login ");
+        if (username.trim().length() <= 0) {
+            throw new NotFoundException("username cannot be empty");
         } else {
-            UserDTO userDTO = service.validateUser(email);
+            UserDTO userDTO = service.validateUser(username);
             String encdata = conveter.decryptPassword(userDTO.password);
             userDTO.setPassword(encdata);
             return new ResponseEntity<>(new StandradResponse("200", "Validate User", userDTO), HttpStatus.CREATED);
