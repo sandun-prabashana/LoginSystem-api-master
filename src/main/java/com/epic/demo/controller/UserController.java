@@ -9,12 +9,15 @@ import com.epic.demo.dto.UserDTO;
 import com.epic.demo.exception.NotfoundException;
 import com.epic.demo.security.PasswordConveter;
 import com.epic.demo.service.UserService;
+import com.epic.demo.util.JwtUtil;
 import com.epic.demo.util.StandradResponse;
 import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,12 @@ public class UserController {
     @Autowired
     UserService service;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     private PasswordConveter conveter = new PasswordConveter();
 
 
@@ -45,7 +54,6 @@ public class UserController {
             return "true";
         }
     }
-
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getDetails( @RequestBody UserDTO dto) throws Exception {
@@ -109,16 +117,38 @@ public class UserController {
 
     }
 
+//    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<StandradResponse> SearchUser(@RequestHeader("username") String username) throws Exception {
+//        System.out.println(username + " username login ");
+//        if (username.trim().length() <= 0) {
+//            throw new NotFoundException("username cannot be empty");
+//        } else {
+//            UserDTO userDTO = service.validateUser(username);
+//            String encdata = conveter.decryptPassword(userDTO.password);
+//            userDTO.setPassword(encdata);
+//            return new ResponseEntity<>(new StandradResponse("200", "Validate User", userDTO), HttpStatus.CREATED);
+//        }
+//    }
+
+    @GetMapping("/a")
+    public String welcome() {
+        return "Welcome to Doom";
+    }
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StandradResponse> SearchUser(@RequestHeader("username") String username) throws Exception {
-        System.out.println(username + " username login ");
-        if (username.trim().length() <= 0) {
-            throw new NotFoundException("username cannot be empty");
-        } else {
-            UserDTO userDTO = service.validateUser(username);
-            String encdata = conveter.decryptPassword(userDTO.password);
-            userDTO.setPassword(encdata);
-            return new ResponseEntity<>(new StandradResponse("200", "Validate User", userDTO), HttpStatus.CREATED);
+    public ResponseEntity<StandradResponse> generateToken(@RequestBody UserDTO authRequest) throws Exception {
+        System.out.println(authRequest.getPassword());
+        String encdata = conveter.convertPassword(authRequest.getPassword());
+        System.out.println(encdata);
+        authRequest.setPassword(encdata);
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
+                    authRequest.getPassword()));
+        }catch (Exception ex){
+            throw new Exception("invalid username/password");
         }
+        String token= jwtUtil.generateToken(authRequest.getUsername());
+                    return new ResponseEntity<>(new StandradResponse("200", "Validate User", token), HttpStatus.CREATED);
+
     }
 }

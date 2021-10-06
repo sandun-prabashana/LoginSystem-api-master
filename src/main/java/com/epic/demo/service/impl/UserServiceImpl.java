@@ -23,23 +23,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean addUser(UserDTO user) {
-
-
         User map = mapper.map(user, User.class);
         userRepo.save(map);
         return true;
     }
 
-    @Override
-    public UserDTO validateUser(String username) {
-        Optional<User> optionalUser = userRepo.findByUsername(username);
-        System.out.println(optionalUser + " find method");
-        if (optionalUser.isPresent()) {
-            return mapper.map(optionalUser.get(), UserDTO.class);
-        } else {
-            throw new ValidateException("There is no optionalUser for this UserName");
-        }
-    }
+//    @Override
+//    public UserDTO validateUser(String username) {
+//        Optional<User> optionalUser = userRepo.findByUsername(username);
+//        System.out.println(optionalUser + " find method");
+//        if (optionalUser.isPresent()) {
+//            return mapper.map(optionalUser.get(), UserDTO.class);
+//        } else {
+//            throw new ValidateException("There is no optionalUser for this UserName");
+//        }
+//    }
 
     @Override
     public String getUid() {
