@@ -136,18 +136,22 @@ public class UserController {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<StandradResponse> generateToken(@RequestBody UserDTO authRequest) throws Exception {
-        System.out.println(authRequest.getPassword());
-        String encdata = conveter.convertPassword(authRequest.getPassword());
+    public ResponseEntity<StandradResponse> generateToken(@RequestHeader("username") String username, @RequestHeader("password") String password) throws Exception {
+        UserDTO dto = new UserDTO();
+        dto.setUsername(username);
+
+
+        System.out.println(password);
+        String encdata = conveter.convertPassword(password);
         System.out.println(encdata);
-        authRequest.setPassword(encdata);
+        dto.setPassword(encdata);
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
-                    authRequest.getPassword()));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username,
+                    encdata));
         }catch (Exception ex){
             throw new Exception("invalid username/password");
         }
-        String token= jwtUtil.generateToken(authRequest.getUsername());
+        String token= jwtUtil.generateToken(username);
                     return new ResponseEntity<>(new StandradResponse("200", "Validate User", token), HttpStatus.CREATED);
 
     }
