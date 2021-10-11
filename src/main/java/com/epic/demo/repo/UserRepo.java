@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface UserRepo extends JpaRepository<User , String> {
 
-    /*Optional<User> findByUsername(String username);*/
+
 
     @Query(value = "SELECT id FROM USER ORDER BY id DESC LIMIT 1", nativeQuery = true)
     String gerLastUid();

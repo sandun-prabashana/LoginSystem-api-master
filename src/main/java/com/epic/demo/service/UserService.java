@@ -10,5 +10,7 @@ public interface UserService {
     String getUserName(String username);
     String getEmail(String email);
 
+    UserDTO getUserDetails(String username);
+
 
 }
